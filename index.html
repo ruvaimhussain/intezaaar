@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>tumhara intezar hai ✅</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* General body styling with gradient background */
+    body {
+      background: linear-gradient(to right, #1d2b64, #f8cdda);
+      color: #fff;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    /* Heading styles */
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Input and button styles */
+    input, button {
+      padding: 10px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      margin: 10px;
+    }
+
+    input {
+      width: 250px;
+      color: black;
+    }
+
+    button {
+      background-color: #00b894;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #008374;
+    }
+
+    /* Output div styling */
+    #output {
+      margin-top: 1rem;
+      font-size: 1.1rem;
+    }
+
+    /* Table styling with zebra striping */
+    table {
+      margin: 2rem auto;
+      border-collapse: collapse;
+      width: 90%;
+      max-width: 800px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    th, td {
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 10px;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: rgba(255, 255, 255, 0.15);
+    }
+
+    tbody tr:nth-child(odd) {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Map link styling */
+    .map-link {
+      color: #00ffc8;
+    }
+
+    /* Spinner styling */
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #00b894;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+      margin: 1rem auto;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <h1>📍 RUVAIM</h1>
+  <p>tumhara intezar tha!</p>
+
+  <input type="text" id="nameInput" placeholder="Enter your name" maxlength="50" />
+  <button onclick="getLocation()">📤 Location</button>
+
+  <div id="output">Waiting for action...</div>
+  <div id="spinner" class="spinner hidden"></div>
+
+  <h2>🗂️ Location History</h2>
+  <table id="historyTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Time</th>
+        <th>Map</th>
+      </tr>
+    </thead>
+    <tbody id="historyBody"></tbody>
+  </table>
+
+  <script>
+    // DOM elements
+    const output = document.getElementById('output');
+    const historyBody = document.getElementById('historyBody');
+    const spinner = document.getElementById('spinner');
+
+    // Load saved history on page load
+    window.onload = () => {
+      const saved = JSON.parse(localStorage.getItem('locationHistory') || '[]');
+      saved.forEach(addRow);
+    };
+
+    // Sanitize input to prevent XSS
+    function sanitizeInput(input) {
+      const div = document.createElement('div');
+      div.textContent = input;
+      return div.innerHTML;
+    }
+
+    // Get user's geolocation
+    function getLocation() {
+      const nameInput = document.getElementById('nameInput').value.trim();
+      const name = sanitizeInput(nameInput);
+
+      // Validate name: alphanumeric and spaces, 1-50 characters
+      if (!name || name.length > 50 || !/^[a-zA-Z0-9\s]+$/.test(name)) {
+        alert('😬 Please enter a valid name (1-50 characters, letters, numbers, spaces only).');
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        output.innerHTML = '❌ Geolocation not supported.';
+        return;
+      }
+
+      // Show spinner and update status
+      spinner.classList.remove('hidden');
+      output.innerHTML = '⏳ Getting your location...';
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          // Hide spinner
+          spinner.classList.add('hidden');
+
+          const lat = pos.coords.latitude.toFixed(5);
+          const lon = pos.coords.longitude.toFixed(5);
+          const time = new Date().toLocaleString();
+          const data = { name, lat, lon, time };
+
+          saveToHistory(data);
+          addRow(data);
+
+          output
